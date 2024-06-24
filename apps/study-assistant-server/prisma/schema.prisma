@@ -1,0 +1,86 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DB_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model ExamBoard {
+  createdAt   DateTime   @default(now())
+  description String?
+  id          String     @id @default(cuid())
+  name        String?
+  questions   Question[]
+  updatedAt   DateTime   @updatedAt
+}
+
+model Subject {
+  createdAt   DateTime @default(now())
+  description String?
+  id          String   @id @default(cuid())
+  name        String?
+  topics      Topic[]
+  updatedAt   DateTime @updatedAt
+}
+
+model Topic {
+  createdAt       DateTime         @default(now())
+  id              String           @id @default(cuid())
+  name            String?
+  questions       Question[]
+  recommendations Recommendation[]
+  subject         Subject?         @relation(fields: [subjectId], references: [id])
+  subjectId       String?
+  updatedAt       DateTime         @updatedAt
+}
+
+model Recommendation {
+  createdAt DateTime @default(now())
+  id        String   @id @default(cuid())
+  priority  Float?
+  topic     Topic?   @relation(fields: [topicId], references: [id])
+  topicId   String?
+  updatedAt DateTime @updatedAt
+  user      User?    @relation(fields: [userId], references: [id])
+  userId    String?
+}
+
+model UserPerformance {
+  answeredCorrectly Boolean?
+  createdAt         DateTime  @default(now())
+  id                String    @id @default(cuid())
+  question          Question? @relation(fields: [questionId], references: [id])
+  questionId        String?
+  updatedAt         DateTime  @updatedAt
+  user              User?     @relation(fields: [userId], references: [id])
+  userId            String?
+}
+
+model Question {
+  createdAt        DateTime          @default(now())
+  examBoard        ExamBoard?        @relation(fields: [examBoardId], references: [id])
+  examBoardId      String?
+  id               String            @id @default(cuid())
+  text             String?
+  topic            Topic?            @relation(fields: [topicId], references: [id])
+  topicId          String?
+  updatedAt        DateTime          @updatedAt
+  userPerformances UserPerformance[]
+  year             Int?
+}
+
+model User {
+  createdAt        DateTime          @default(now())
+  email            String?           @unique
+  firstName        String?
+  id               String            @id @default(cuid())
+  lastName         String?
+  password         String
+  recommendations  Recommendation[]
+  roles            Json
+  updatedAt        DateTime          @updatedAt
+  username         String            @unique
+  userPerformances UserPerformance[]
+}
